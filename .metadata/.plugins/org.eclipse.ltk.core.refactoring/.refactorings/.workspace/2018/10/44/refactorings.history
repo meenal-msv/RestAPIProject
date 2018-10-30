@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring accessors="true" comment="Delete 2 elements from workspace&#x0D;&#x0A;- Original elements:&#x0D;&#x0A;     readme.txt&#x0D;&#x0A;     readme.txt" description="Delete elements" element1="/RestAPIDummy/readme.txt" element2="/RestAPIClassCreatorTool/readme.txt" elements="0" flags="589830" id="org.eclipse.jdt.ui.delete" resources="2" stamp="1540906636877" subPackages="false" version="1.0"/>
-</session>
