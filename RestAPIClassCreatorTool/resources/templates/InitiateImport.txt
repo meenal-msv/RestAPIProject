@@ -1,0 +1,30 @@
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.ecs.ElementContainer;
+import org.json.JSONObject;
+import org.json.XML;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.misys.portal.common.resources.TechnicalResourceProvider;
+import com.misys.portal.core.portal.factory.PortletFactory;
+import com.misys.portal.core.portal.factory.PortletRegistry;
+import com.misys.portal.product.lc.portlets.LetterOfCreditPortlet;
+import com.misys.portal.security.GTPUser;
+import com.misys.portal.services.rundata.GTPRunData;
+import com.misys.portal.webservices.apis.actions.RestAPISessionHandler;
+import com.misys.portal.webservices.apis.config.RestAPIConstants;
+import com.misys.portal.webservices.apis.exception.RestExceptionBuilder;
+import com.misys.portal.webservices.apis.pojo.request.BaseRequest;
+import com.misys.portal.webservices.apis.pojo.response.ResultData;
+import com.misys.portal.webservices.apis.services.AppendJSONResponse;
+import com.misys.portal.webservices.apis.services.GetUserDetails;
+import com.misys.portal.webservices.apis.services.RequestParametersValidator;
+import com.misys.portal.webservices.apis.services.RestAPITokenService;
+
+import io.swagger.annotations.ApiParam;

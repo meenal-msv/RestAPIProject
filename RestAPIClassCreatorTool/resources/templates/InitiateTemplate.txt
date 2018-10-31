@@ -1,0 +1,76 @@
+	@Autowired
+	RestAPISessionHandler restAPISessionHandler;
+
+	@Autowired
+	GetUserDetails getUserDetails;
+
+	@Autowired
+	RequestParametersValidator requestParametersValidator;
+
+	@Autowired
+	RestExceptionBuilder restExceptionBuilder;
+
+	@Autowired
+	AppendJSONResponse appendJSONResponse;
+
+	@Autowired
+	RestAPITokenService restAPITokenService;
+
+	public @ResponseBody ResultData initiateRequest(HttpServletRequest request, HttpServletResponse response,
+			@Valid @ApiParam(value = "Change Request Object. Request-Params:[Mandatory(@key:option,@val:pick from GetBillPaymentList),Mandatory(@key:tnxtype,@val:01),Mandatory(@key:featureid,@val:billpayeeid from GetBillPaymentList)]", required = true) @RequestBody BaseRequest requestBody,
+			Errors errors) throws Exception {
+
+		JSONObject resJSON = new JSONObject();
+		request.setAttribute(RestAPIConstants.LANGUAGE, RestAPIConstants.EN);
+		GTPUser user = null;
+		GTPRunData data = null;
+		ResultData resultData = new ResultData();
+
+		request.setAttribute(RestAPIConstants.LANGUAGE, RestAPIConstants.EN);
+		user = restAPISessionHandler.getGTPUserFromSession(request, requestBody.getUserData());
+
+		if (requestParametersValidator.validateInputParameters(errors, resJSON, request, user, response)) {
+			restExceptionBuilder.buildErrorMessage(resJSON, resultData);
+			return resultData;
+		}
+
+		data = getUserDetails.getRunData(request, response, user);
+
+		if (data == null) {
+			restExceptionBuilder.buildErrorMessage(request, resJSON, RestAPIConstants.RESPONSE,
+					RestAPIConstants.FAILED);
+			restExceptionBuilder.buildErrorMessage(request, resJSON, RestAPIConstants.ERROR_MESSAGE,
+					RestAPIConstants.LOGGEDIN_ERROR_MESSAGE);
+			restExceptionBuilder.buildErrorMessage(resJSON, resultData);
+			return resultData;
+		}
+		
+		//RestapiTODO: Add parameters based on action code.
+		/*data.getParameters().add("featureid", requestBody.getRequestData().getFeatureid());
+		data.getParameters().add("tnxtype", "LIST");
+		data.getParameters().add("option", "BILLP");
+		data.getParameters().add("screen", "LetterOfCreditScreen");
+		data.setAction("InitStdLCFromScratch");*/
+		
+		data.getParameters().add(RestAPIConstants.REST_API_CHANNEL_CONSTANT, RestAPIConstants.REST_API_CHANNEL);
+
+		//RestapiTODO: update portlet object creation specific to product.
+		com.misys.portal.core.xml.peer.registrymarkup.Entry entry = PortletRegistry.getInstance()
+				.getEntry("LetterOfCreditPortlet");
+		LetterOfCreditPortlet portlet = (LetterOfCreditPortlet) PortletFactory.getPortlet(entry, data, true);
+		
+		//RestapiTODO: update portlet method call specific to operation.
+		ElementContainer elementContainer = portlet.initiateLCFromScratch(data);
+		
+		resJSON = XML.toJSONObject(elementContainer.getAttribute("restAPIxml"));
+		restAPITokenService.storeSaltListinApplicationCache(requestBody.getUserData(), data);
+
+		data.getTemplateInfo().setTemp(TechnicalResourceProvider.XML_HTTP_REQUEST_RESPONSE,
+				appendJSONResponse
+						.addSuccessResponse(new JSONObject(StringEscapeUtils.unescapeHtml(resJSON.toString())), user)
+						.getBytes());
+
+		resultData = appendJSONResponse.addSuccessOrFailureResponse(data, user, ResultData.class);
+
+		return resultData;
+	}

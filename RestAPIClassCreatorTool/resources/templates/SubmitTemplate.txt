@@ -1,0 +1,86 @@
+	@Autowired
+	RestAPISessionHandler restAPISessionHandler;
+
+	@Autowired
+	RequestParametersValidator requestParametersService;
+
+	@Autowired
+	GetUserDetails getUserDetails;
+
+	@Autowired
+	RestExceptionBuilder restExceptionBuilder;
+
+	@Autowired
+	AppendJSONResponse appendJSONResponse;
+
+	@Autowired
+	RestAPITokenService restAPITokenService;
+
+	public @ResponseBody ResultDataWithMessage submitRequest(HttpServletRequest request,
+			HttpServletResponse response, @Valid @RequestBody BaseRequest requestBody,
+			Errors errors) throws Exception {
+
+		JSONObject resJSON = new JSONObject();
+		GTPUser user = null;
+		ResultDataWithMessage resultData = new ResultDataWithMessage();
+
+		request.setAttribute(RestAPIConstants.LANGUAGE, RestAPIConstants.EN);
+		user = restAPISessionHandler.getGTPUserFromSession(request, requestBody.getUserData());
+		GTPRunData data = null;
+		getUserDetails.setUserSelectedLanguage(user,
+				requestBody.getUserData().getUserSelectedLanguage(), request);
+		data = getUserDetails.getRunData(request, response, user);
+		if (data == null) {
+			restExceptionBuilder.buildErrorMessage(request, resJSON, RestAPIConstants.RESPONSE,
+					RestAPIConstants.FAILED);
+			restExceptionBuilder.buildErrorMessage(request, resJSON, RestAPIConstants.ERROR_MESSAGE,
+					RestAPIConstants.LOGGEDIN_ERROR_MESSAGE);
+			restExceptionBuilder.buildErrorMessage(resJSON, resultData);
+			return resultData;
+		}
+		if (requestParametersService.validateInputParameters(errors, resJSON, request, user, response)) {
+			restExceptionBuilder.buildErrorMessage(resJSON, resultData);
+			return resultData;
+		}
+		ObjectMapper oMapper = new ObjectMapper();
+		Map<String, Object> map = oMapper.convertValue(new Object(), Map.class);
+		JSONObject json = new JSONObject(map);
+		String xml = XML.toString(json);
+		
+		//RestapiTODO: Add parameters based on action code.
+		/*data.getParameters().add("TransactionData", "<lc_tnx_record>" + xml + "</lc_tnx_record>");
+		data.getParameters().add("referenceid", requestBody.getRequestData().getRef_id());
+		data.getParameters().add("tnxid", requestBody.getRequestData().getTnx_id());
+		data.getParameters().add("tnxtype", requestBody.getRequestData().getTnxtype());
+		data.getParameters().add("subproductcode", requestBody.getRequestData().getSub_product_code());
+		data.getParameters().add("productcode", requestBody.getRequestData().getProduct_code());
+		data.getParameters().add("reauth_password", requestBody.getRequestData().getReauth_password());
+		data.getParameters().add("token", requestBody.getRequestData().getToken());
+		
+		data.getParameters().add("screen", "ScreenName");
+		data.setAction("ActionName");*/
+		
+		data.getParameters().add(RestAPIConstants.REST_API_CHANNEL_CONSTANT, RestAPIConstants.REST_API_CHANNEL);
+
+		//RestapiTODO: Add/update validation specific to this operation.
+		/*if (!requestParametersService.validateSubmitFTTPTParameters(user, data, resJSON, json, request, response)) {
+			restExceptionBuilder.buildErrorMessage(resJSON, resultData);
+			return resultData;
+		}*/
+
+		restAPITokenService.validateToken(data);
+
+		//RestapiTODO: update portlet object creation specific to product.
+		com.misys.portal.core.xml.peer.registrymarkup.Entry entry = PortletRegistry.getInstance()
+				.getEntry("LetterOfCreditPortlet");
+		LetterOfCreditPortlet portlet = (LetterOfCreditPortlet) PortletFactory.getPortlet(entry, data, true);
+		
+		//RestapiTODO: update portlet method call specific to operation.
+		ConcreteElement concreteElement = portlet.submitLC(data);
+		
+		data.getTemplateInfo().setTemp(TechnicalResourceProvider.XML_HTTP_REQUEST_RESPONSE,
+				appendJSONResponse.addSuccessOrFailureResponse(data, user, concreteElement, response).getBytes());
+
+		resultData = appendJSONResponse.addSuccessOrFailureResponse(data, user, ResultDataWithMessage.class);
+		return resultData;
+	}
