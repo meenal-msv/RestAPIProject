@@ -25,3 +25,12 @@ import com.misys.portal.webservices.apis.services.AppendJSONResponse;
 import com.misys.portal.webservices.apis.services.GetUserDetails;
 import com.misys.portal.webservices.apis.services.RequestParametersValidator;
 import com.misys.portal.webservices.apis.services.RestAPITokenService;
+
+@Controller
+@Api(value = "", description = "This service will allow the user to generate a bill payment request to a payee. ")
+public class FundTransferRequestContoller extends HttpServlet
+{
+
+	/**
+	 * @author spradhan This controller class is used to request for a fund transfer
+	 */

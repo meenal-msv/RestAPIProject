@@ -1,6 +1,7 @@
 package com.tool.main;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -13,6 +14,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.tool.generate.templates.SubmitTemplate;
 
 public class ClassCreatorTool {
 
@@ -66,7 +69,7 @@ public class ClassCreatorTool {
 
 				}
 			}
-			/*System.out.println("\n ------ All class names ------ \n");
+			System.out.println("\n ------ All class names ------ \n");
 			for(String className : classNamesSet)
 			{
 				System.out.println("Method Name : " + className);
@@ -75,7 +78,7 @@ public class ClassCreatorTool {
 			for(String methodName : methodNamesSet)
 			{
 				System.out.println("Method Name : " + methodName);
-			}*/
+			}
 			System.out.println("\n ------ All class and method names in MAPS ------ \n");
 			Set<String> keys = classMethodMap.keySet();
 			Iterator<String> keysIterator = keys.iterator();
@@ -91,6 +94,57 @@ public class ClassCreatorTool {
 		{
 			e.printStackTrace();
 		}
+		
+		SubmitTemplate st = new SubmitTemplate();
+		try
+		{
+			st.submitControllerCreation();
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		/*String destPath = "V:/MeenalSV/Workspaces/RestAPI//RestAPIDummy/src/resources/webservices/apis/controller";
+		String sourcePath = "V:/MeenalSV/Workspaces/RestAPI/RestAPIClassCreatorTool/resources/templates/SubmitTemplate.txt";
+		try {
+			FileReader fr = new FileReader(sourcePath);
+			BufferedReader br = new BufferedReader(fr);
+			FileWriter fw = new FileWriter(destPath + "/Submit.java", true);
+			String s;
+
+			while ((s = br.readLine()) != null) { // read a line
+				fw.write(s); // write to output file
+				fw.flush();
+			}
+			br.close();
+			fw.close();
+			System.out.println("file copied");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			FileInputStream	Fread = new FileInputStream(sourcePath);
+		
+	        FileOutputStream Fwrite=new FileOutputStream(destPath + "/Submit.java") ; 
+	        System.out.println("File is Copied"); 
+	        int c; 
+	        while((c=Fread.read())!=-1) 
+	        Fwrite.write((char)c); 
+	        Fread.close(); 
+	        Fwrite.close(); 
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} */
+        
+		System.out.println("File created.");
 	}
 
 }
